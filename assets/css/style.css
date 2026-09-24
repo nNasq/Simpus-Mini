@@ -1,3 +1,4 @@
+/* ===== Reset & Base ===== */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -7,20 +8,23 @@
 body {
     font-family: 'Inter', "Segoe UI", Arial, sans-serif;
     color: #2b2b2b;
+    background-color: #f5f6f8;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    line-height: 1.5;
 }
 
 a {
-    text-decoration: none;
     color: #0000FF;
+    text-decoration: none;
 }
 
 a:hover {
     text-decoration: underline;
 }
 
+/* ===== Header & Navbar ===== */
 header {
     background-color: #0000FF;
     color: #fff;
@@ -36,12 +40,13 @@ header h1 {
     font-size: 1.4rem;
 }
 
+/* Checkbox & Hamburger Toggle (Mobile First) */
 .nav-toggle {
     display: none;
 }
 
 .nav-toggle-label {
-    display: none;
+    display: block; /* Tampil di mobile */
     font-size: 1.6rem;
     color: #fff;
     background: none;
@@ -60,8 +65,12 @@ header nav {
     transition: max-height 0.4s ease-in-out, opacity 0.3s ease-in-out;
 }
 
-.nav-toggle:checked ~ nav {
+/* Mendukung JS (.nav-open) maupun murni CSS (checkbox:checked) */
+.nav-toggle:checked ~ nav,
+header nav.nav-open {
     display: block;
+    max-height: 300px;
+    opacity: 1;
 }
 
 header nav ul {
@@ -76,13 +85,11 @@ header nav a {
     font-weight: 500;
 }
 
-header nav.nav-open {
-    max-height: 300px;
-    opacity: 1;
-}
-
+/* ===== Main Layout & Sections ===== */
 main {
+    flex: 1; /* Mendorong footer ke bawah (min-height: 100vh) */
     width: 100%;
+    max-width: 1000px;
     margin: 2rem auto;
     padding: 0 1.5rem;
 }
@@ -100,17 +107,26 @@ section h2 {
     color: #0000FF;
 }
 
-/* main section:nth-of-type(2) {
+/* ===== Kartu Statistik & Summary (CSS Grid) ===== */
+main section:nth-of-type(2) {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; /* Mobile-first: 1 kolom */
     gap: 1rem;
-} */
+}
 
-main section:nth-of-type(2) article {
+main section:nth-of-type(2) article,
+.summary-card {
     background-color: #eaf1f8;
     border-radius: 8px;
     padding: 1.25rem;
     text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+main section:nth-of-type(2) article:hover,
+.summary-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1) !important;
 }
 
 main section:nth-of-type(2) article h3 {
@@ -125,18 +141,30 @@ main section:nth-of-type(2) article p {
     color: #0000FF;
 }
 
+.summary-icon {
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin: 0 auto 0.5rem auto;
+}
+
+/* ===== Form ===== */
 form p {
     margin-bottom: 1rem;
 }
 
 form label {
     display: block;
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.5rem;
     font-weight: 500;
     color: #444;
 }
 
-form input, form select {
+form input, 
+form select {
     width: 100%;
     max-width: 100%;
     padding: 0.55rem 0.7rem;
@@ -159,6 +187,7 @@ form button[type="submit"]:hover {
     background-color: #164869;
 }
 
+/* ===== Tabel (Standar & Custom) ===== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -193,19 +222,32 @@ td button {
     font-size: 0.85rem;
 }
 
-td button:first-of-type {
-    background-color: #f0ad4e;
+td button:first-of-type { background-color: #f0ad4e; color: #fff; }
+td button:nth-of-type(2) { background-color: #228B22; color: #fff; }
+td button:last-of-type { background-color: #d9534f; color: #fff; }
+
+/* Custom Table Theme */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.custom-table th, .custom-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e6ea;
+}
+
+.custom-table thead {
+    background-color: #0d6efd;
     color: #fff;
 }
 
-td button:nth-of-type(2) {
-    background-color: #228B22;
-    color: #fff;
+.custom-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
 }
 
-td button:last-of-type {
-    background-color: #d9534f;
-    color: #fff;
+.custom-table tbody tr:hover {
+    background-color: #eef4fa;
 }
 
 .table-responsive,
@@ -214,61 +256,14 @@ td button:last-of-type {
     width: 100%;
 }
 
-footer {
-    text-align: center;
-    padding: 1.25rem;
-    color: #7a8794;
-    font-size: 0.9rem;
-}
-
-@media (min-width: 481px) {
-    /* main section:nth-of-type(2) {
-        grid-template-columns: repeat(2, 1fr);
-    } */
-
-    form input, form select {
-        max-width: 400px;
-    }
-}
-
-@media (min-width: 900px) {
-    main {
-        max-width: 1000px;
-    }
-
-    .nav-toggle-label {
-        display: none;
-    }
-
-    header nav {
-        display: block;
-        width: auto;
-        order: unset;
-        margin-top: 0;
-    }
-
-    header nav ul {
-        flex-direction: row;
-    }
-
-    /* main section:nth-of-type(2) {
-        grid-template-columns: repeat(4, 1fr);
-    } */
-}
-
-@media (min-width: 1400px) {
-    main {
-        max-width: 1200px;
-    }
-}
-
+/* ===== Utility & Components ===== */
 .login-wrapper {
-    max-width: 500px;
+    max-width: 450px;
     margin: 10vh auto;
-}
-
-header nav.nav-open {
-    display: block;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
 }
 
 .search-box {
@@ -283,73 +278,96 @@ header nav.nav-open {
     border-radius: 4px;
 }
 
-.summary-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.summary-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1) !important;
-}
-
-.summary-icon {
-    width: 70px;
-    height: 70px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-}
-
-form label {
+/* Flash & Error Messages */
+.flash {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
     font-weight: 500;
-    color: #444;
-    margin-bottom: 0.5rem;
 }
 
-.custom-table {
-    width: 100%;
-    border-collapse: collapse;
+.flash-success {
+    background-color: #d4edda;
+    color: #155724;
 }
 
-.custom-table th, .custom-table td {
-    text-align: left;
-    padding: 1rem;
-    border-bottom: 1px solid #e2e6ea;
-}
-
-.custom-table thead {
-    background-color: #0d6efd; /* Sesuai warna primary bootstrap */
-    color: #fff;
-}
-
-.custom-table tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
-}
-
-.custom-table tbody tr:hover {
-    background-color: #eef4fa;
-}
-
-.login-wrapper {
-    max-width: 450px;
-    margin: 10vh auto;
-    padding: 2rem;
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+.flash-error {
+    background-color: #f8d7da;
+    color: #721c24;
 }
 
 .error {
+    display: block;
     color: #dc3545;
     font-size: 0.875rem;
     margin-top: 0.25rem;
 }
 
+/* ===== Footer ===== */
+footer {
+    text-align: center;
+    padding: 1.25rem;
+    color: #7a8794;
+    font-size: 0.9rem;
+}
+
+/* ===== Responsive Breakpoints ===== */
+
+/* Tablet (481px ke atas) */
+@media (min-width: 481px) {
+    main section:nth-of-type(2) {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    form input, form select {
+        max-width: 400px;
+    }
+}
+
+/* Desktop (900px ke atas) */
+@media (min-width: 900px) {
+    main {
+        max-width: 1000px;
+    }
+
+    /* Kembalikan Header & Navbar ke baris horizontal */
+    .nav-toggle-label {
+        display: none;
+    }
+
+    header nav {
+        display: block;
+        width: auto;
+        order: unset;
+        margin-top: 0;
+        max-height: none;
+        opacity: 1;
+        overflow: visible;
+    }
+
+    header nav ul {
+        flex-direction: row;
+        gap: 1.25rem;
+    }
+
+    /* Ubah Grid ke 3 kolom seperti awal */
+    main section:nth-of-type(2) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* Ekstra untuk spesifik navigasi JS / Bootstrap */
 @media (min-width: 992px) {
     #navMenu {
         max-height: none;
         overflow: visible;
         opacity: 1;
+    }
+}
+
+/* Large Desktop (1400px ke atas) */
+@media (min-width: 1400px) {
+    main {
+        max-width: 1200px;
     }
 }

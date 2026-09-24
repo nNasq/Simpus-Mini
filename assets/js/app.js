@@ -1,9 +1,18 @@
 document.addEventListener("DOMContentLoaded", function () {
-    initNavToggle();
+    // Toggle navbar ditangani Bootstrap (data-bs-toggle="collapse")
     initHapusConfirm();
     initTableFilter();
     initValidasiForm();
 });
+
+function escapeHtml(teks) {
+    return String(teks ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
 
 async function muatDataGenerik(urlJson, daftarKunci) {
     const tbody = document.querySelector(".table-responsive table tbody");
@@ -36,17 +45,22 @@ async function muatDataGenerik(urlJson, daftarKunci) {
             let barisHTML = "";
 
             daftarKunci.forEach(function (kunci) {
-                const styleCSS = (kunci === "judul" || kunci === "nama")
+                const styleCSS = (kunci === "nama")
                     ? ' class="text-start fw-medium text-dark"'
                     : '';
 
-                let isiKolom = item[kunci];
+                let isiKolom = escapeHtml(item[kunci]);
+
                 if (kunci === "stok") {
-                    if (isiKolom > 0) {
+                    if (Number(item[kunci]) > 0) {
                         isiKolom = `${isiKolom} <span class="badge bg-success rounded-pill ms-1">Tersedia</span>`;
                     } else {
                         isiKolom = `${isiKolom} <span class="badge bg-danger rounded-pill ms-1">Kosong</span>`;
                     }
+                }
+
+                if (kunci === "harga") {
+                    isiKolom = "Rp " + Number(item[kunci]).toLocaleString("id-ID");
                 }
 
                 barisHTML += `<td${styleCSS}>${isiKolom}</td>`;
@@ -69,7 +83,7 @@ async function muatDataGenerik(urlJson, daftarKunci) {
 
     } catch (err) {
         const errorTr = document.createElement("tr");
-        errorTr.innerHTML = `<td colspan="${daftarKunci.length + 1}" class="text-danger py-3">Gagal memuat data: ${err.message}</td>`;
+        errorTr.innerHTML = `<td colspan="${daftarKunci.length + 1}" class="text-danger py-3">Gagal memuat data: ${escapeHtml(err.message)}</td>`;
         tbody.appendChild(errorTr);
     } finally {
         if (loadingRow) {
@@ -78,26 +92,13 @@ async function muatDataGenerik(urlJson, daftarKunci) {
     }
 }
 
-function initNavToggle() {
-    const toggleBtn = document.getElementById("nav-toggle-btn");
-    const nav = document.querySelector("header nav");
-
-    if (!toggleBtn || !nav) return;
-
-    toggleBtn.addEventListener("click", function () {
-        nav.classList.toggle("nav-open");
-    });
-}
-
 function initHapusConfirm() {
     document.addEventListener("click", function (e) {
-        console.log("Elemen yang diklik:", e.target);
-
         const btn = e.target.closest(".btn-hapus");
         if (!btn) return;
 
         const row = btn.closest("tr");
-        const nama = row ? row.querySelector("td")?.textContent : "data ini";
+        const nama = row ? row.querySelector("td")?.textContent.trim() : "data ini";
         const yakin = confirm("Yakin ingin menghapus \"" + nama + "\"?");
         if (yakin && row) {
             row.remove();
@@ -151,15 +152,18 @@ function initTableFilter() {
     });
 }
 
+// Error validasi memakai class Bootstrap (is-invalid + invalid-feedback)
 function tampilkanError(input, pesan) {
     hapusError(input);
-    const span = document.createElement("span");
-    span.className = "error text-danger small d-block mt-1";
-    span.textContent = pesan;
-    input.insertAdjacentElement("afterend", span);
+    input.classList.add("is-invalid");
+    const div = document.createElement("div");
+    div.className = "error invalid-feedback";
+    div.textContent = pesan;
+    input.insertAdjacentElement("afterend", div);
 }
 
 function hapusError(input) {
+    input.classList.remove("is-invalid");
     const next = input.nextElementSibling;
     if (next && next.classList.contains("error")) {
         next.remove();
@@ -173,7 +177,8 @@ function initValidasiForm() {
     form.addEventListener("submit", function (e) {
         let valid = true;
 
-        const fieldWajib = ["judul", "pengarang", "tahun", "stok", "isbn", "nama", "no_anggota"];
+        // Field yang tidak ada di form (mis. "harga" di form supplier) otomatis dilewati
+        const fieldWajib = ["nama", "harga", "stok", "kode_supplier"];
 
         fieldWajib.forEach(function (name) {
             const input = form.querySelector(`[name='${name}']`);
@@ -188,12 +193,14 @@ function initValidasiForm() {
             }
         });
 
-        const inputIsbn = form.querySelector("[name='isbn']");
-        if (inputIsbn && inputIsbn.value.trim() !== "") {
-            const regexIsbn = /^[0-9\-]+$/;
-            if (!regexIsbn.test(inputIsbn.value.trim())) {
-                tampilkanError(inputIsbn, "Format tidak valid. ISBN hanya boleh berisi angka dan tanda hubung (-).");
+        const inputSku = form.querySelector("[name='sku']");
+        if (inputSku && inputSku.value.trim() !== "") {
+            const regexSku = /^[A-Za-z0-9\-]+$/;
+            if (!regexSku.test(inputSku.value.trim())) {
+                tampilkanError(inputSku, "Format tidak valid. SKU hanya boleh berisi huruf, angka, dan tanda hubung (-).");
                 valid = false;
+            } else {
+                hapusError(inputSku);
             }
         }
 
