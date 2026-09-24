@@ -152,7 +152,6 @@ function initTableFilter() {
     });
 }
 
-// Error validasi memakai class Bootstrap (is-invalid + invalid-feedback)
 function tampilkanError(input, pesan) {
     hapusError(input);
     input.classList.add("is-invalid");
@@ -177,7 +176,6 @@ function initValidasiForm() {
     form.addEventListener("submit", function (e) {
         let valid = true;
 
-        // Field yang tidak ada di form (mis. "harga" di form supplier) otomatis dilewati
         const fieldWajib = ["nama", "harga", "stok", "kode_supplier"];
 
         fieldWajib.forEach(function (name) {

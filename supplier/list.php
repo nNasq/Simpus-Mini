@@ -24,10 +24,10 @@ $daftarSupplier = $pdo->query("SELECT * FROM supplier ORDER BY id DESC")->fetchA
 </div>
 
 <?php if ($flash): ?>
-<div class="alert alert-<?php echo $flash['type'] === 'success' ? 'success' : 'danger'; ?> alert-dismissible fade show shadow-sm rounded-3" role="alert">
-    <?php echo e($flash['pesan']); ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
-</div>
+    <div class="alert alert-<?php echo $flash['type'] === 'success' ? 'success' : 'danger'; ?> alert-dismissible fade show shadow-sm rounded-3" role="alert">
+        <?php echo e($flash['pesan']); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+    </div>
 <?php endif; ?>
 
 <div class="card border-0 shadow-sm rounded-4">
@@ -64,24 +64,24 @@ $daftarSupplier = $pdo->query("SELECT * FROM supplier ORDER BY id DESC")->fetchA
                             </div>
                         </td>
                     </tr>
-                    
+
                     <?php if (empty($daftarSupplier)): ?>
-                    <tr>
-                        <td colspan="5" class="text-muted py-4">Belum ada data supplier. Silakan tambah lewat menu "Tambah Supplier Baru".</td>
-                    </tr>
+                        <tr>
+                            <td colspan="5" class="text-muted py-4">Belum ada data supplier. Silakan tambah lewat menu "Tambah Supplier Baru".</td>
+                        </tr>
                     <?php else: ?>
                         <?php foreach ($daftarSupplier as $s): ?>
-                        <tr>
-                            <td class="fw-medium text-secondary"><?php echo e($s['kode_supplier']); ?></td>
-                            <td class="text-start fw-medium text-dark"><?php echo e($s['nama']); ?></td>
-                            <td><?php echo e($s['alamat']); ?></td>
-                            <td><?php echo e($s['no_hp']); ?></td>
-                            <td>
-                                <button type="button" class="btn btn-warning btn-sm text-white" title="Edit"><i class="bi bi-pencil-square"></i></button>
-                                <button type="button" class="btn btn-info btn-sm text-white" title="Detail"><i class="bi bi-eye"></i></button>
-                                <button type="button" class="btn btn-danger btn-sm btn-hapus" title="Hapus"><i class="bi bi-trash"></i></button>
-                            </td>
-                        </tr>
+                            <tr>
+                                <td class="fw-medium text-secondary"><?php echo e($s['kode_supplier']); ?></td>
+                                <td class="text-start fw-medium text-dark"><?php echo e($s['nama']); ?></td>
+                                <td><?php echo e($s['alamat']); ?></td>
+                                <td><?php echo e($s['no_hp']); ?></td>
+                                <td>
+                                    <button type="button" class="btn btn-warning btn-sm text-white" title="Edit"><i class="bi bi-pencil-square"></i></button>
+                                    <button type="button" class="btn btn-info btn-sm text-white" title="Detail"><i class="bi bi-eye"></i></button>
+                                    <button type="button" class="btn btn-danger btn-sm btn-hapus" title="Hapus"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
