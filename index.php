@@ -3,14 +3,12 @@ $page_title = "Beranda";
 include __DIR__ . '/includes/header.php';
 require __DIR__ . '/includes/koneksi.php';
 
-// Eksekusi data dinamis
 $totalBarang   = $pdo->query("SELECT COUNT(*) FROM barang")->fetchColumn();
 $totalSupplier = $pdo->query("SELECT COUNT(*) FROM supplier")->fetchColumn();
 $stokMenipis   = $pdo->query("SELECT COUNT(*) FROM barang WHERE stok > 0 AND stok <= 5")->fetchColumn();
 $stokHabis     = $pdo->query("SELECT COUNT(*) FROM barang WHERE stok = 0")->fetchColumn();
 ?>
 
-<!-- Section 1: Hero Banner -->
 <section class="p-4 p-md-5 mb-4 bg-white rounded-4 shadow-sm border-0 text-center text-md-start hero-section" style="display: block !important;">
     <div class="row align-items-center">
         <div class="col-lg-8">
@@ -25,12 +23,10 @@ $stokHabis     = $pdo->query("SELECT COUNT(*) FROM barang WHERE stok = 0")->fetc
     </div>
 </section>
 
-<!-- Section 2: Ringkasan Data -->
 <section class="p-4 p-md-5 mb-5 bg-white rounded-4 shadow-sm border-0" style="display: block !important;">
     <h3 class="fw-bold mb-4 text-dark"><i class="bi bi-bar-chart-fill text-primary me-2"></i> Ringkasan Data</h3>
 
     <div class="row g-3 g-md-4 text-center">
-        <!-- Total Barang -->
         <div class="col-12 col-sm-6 col-lg-3">
             <div class="card summary-card h-100 border-0 rounded-4 shadow-sm p-3 p-md-4">
                 <div class="summary-icon text-primary bg-primary bg-opacity-10 mb-3 mx-auto" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
@@ -41,7 +37,6 @@ $stokHabis     = $pdo->query("SELECT COUNT(*) FROM barang WHERE stok = 0")->fetc
             </div>
         </div>
 
-        <!-- Total Supplier -->
         <div class="col-12 col-sm-6 col-lg-3">
             <div class="card summary-card h-100 border-0 rounded-4 shadow-sm p-3 p-md-4">
                 <div class="summary-icon text-success bg-success bg-opacity-10 mb-3 mx-auto" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
@@ -52,7 +47,6 @@ $stokHabis     = $pdo->query("SELECT COUNT(*) FROM barang WHERE stok = 0")->fetc
             </div>
         </div>
 
-        <!-- Stok Menipis -->
         <div class="col-12 col-sm-6 col-lg-3">
             <div class="card summary-card h-100 border-0 rounded-4 shadow-sm p-3 p-md-4">
                 <div class="summary-icon text-warning bg-warning bg-opacity-10 mb-3 mx-auto" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
@@ -63,7 +57,6 @@ $stokHabis     = $pdo->query("SELECT COUNT(*) FROM barang WHERE stok = 0")->fetc
             </div>
         </div>
 
-        <!-- Stok Habis -->
         <div class="col-12 col-sm-6 col-lg-3">
             <div class="card summary-card h-100 border-0 rounded-4 shadow-sm p-3 p-md-4">
                 <div class="summary-icon text-danger bg-danger bg-opacity-10 mb-3 mx-auto" style="width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; border-radius: 50%;">
