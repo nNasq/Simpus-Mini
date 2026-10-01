@@ -19,7 +19,7 @@ try {
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         // Ubah baris di bawah ini dari false menjadi true
-        PDO::ATTR_EMULATE_PREPARES   => true, 
+        PDO::ATTR_EMULATE_PREPARES   => true,
     ]);
 } catch (PDOException $e) {
     die("Koneksi database gagal: " . $e->getMessage());
@@ -33,50 +33,63 @@ try {
 
 // Pengecekan agar class tidak dideklarasikan dua kali jika file terpanggil ganda
 if (!class_exists('DatabaseSessionHandler')) {
-    
-    class DatabaseSessionHandler implements SessionHandlerInterface {
+
+    class DatabaseSessionHandler implements SessionHandlerInterface
+    {
         private $pdo;
-        
-        public function __construct($pdo) { 
-            $this->pdo = $pdo; 
+
+        public function __construct($pdo)
+        {
+            $this->pdo = $pdo;
         }
-        
+
         #[\ReturnTypeWillChange]
-        public function open($path, $name) { return true; }
-        
+        public function open($path, $name)
+        {
+            return true;
+        }
+
         #[\ReturnTypeWillChange]
-        public function close() { return true; }
-        
+        public function close()
+        {
+            return true;
+        }
+
         #[\ReturnTypeWillChange]
-        public function read($id) {
+        public function read($id)
+        {
             $stmt = $this->pdo->prepare("SELECT data FROM app_sessions WHERE id = ?");
             $stmt->execute([$id]);
             $data = $stmt->fetchColumn();
             return $data !== false ? $data : '';
         }
-        
+
         #[\ReturnTypeWillChange]
-        public function write($id, $data) {
+        public function write($id, $data)
+        {
             $waktu = time();
             $stmt = $this->pdo->prepare("INSERT INTO app_sessions (id, data, waktu) VALUES (?, ?, ?) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, waktu = EXCLUDED.waktu");
             return $stmt->execute([$id, $data, $waktu]);
         }
-        
+
         #[\ReturnTypeWillChange]
-        public function destroy($id) {
+        public function destroy($id)
+        {
             $stmt = $this->pdo->prepare("DELETE FROM app_sessions WHERE id = ?");
             return $stmt->execute([$id]);
         }
-        
+
         #[\ReturnTypeWillChange]
-        public function gc($max_lifetime) {
+        public function gc($max_lifetime)
+        {
             $stmt = $this->pdo->prepare("DELETE FROM app_sessions WHERE waktu < ?");
             $stmt->execute([time() - $max_lifetime]);
             return $stmt->rowCount();
         }
     }
 
-    // Wajib dipanggil sebelum session_start()
-    session_set_save_handler(new DatabaseSessionHandler($pdo), true);
+    // Pastikan session belum berjalan sebelum mengubah handlernya
+    if (session_status() === PHP_SESSION_NONE) {
+        session_set_save_handler(new DatabaseSessionHandler($pdo), true);
+    }
 }
-?>
