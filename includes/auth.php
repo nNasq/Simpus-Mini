@@ -1,12 +1,23 @@
 <?php
-// Guard clause: di-include di baris paling atas setiap halaman yang
-// membutuhkan login (sebelum header.php mengeluarkan output apa pun),
-// agar header('Location: ...') masih bisa dipanggil.
+// Panggil koneksi terlebih dahulu
+require_once __DIR__ . '/koneksi.php';
+
+// Baru mulai session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Cek status login
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../auth/login.php');
+    $_SESSION['flash'] = ['type' => 'danger', 'pesan' => 'Anda harus login terlebih dahulu.'];
+    
+    // Penyesuaian path agar dinamis
+    $__jobsheetRoot = dirname(__DIR__);
+    $__scriptDir = dirname($_SERVER['SCRIPT_FILENAME']);
+    $__rel = ltrim(str_replace('\\', '/', substr($__scriptDir, strlen($__jobsheetRoot))), '/');
+    $base = $__rel === '' ? '' : str_repeat('../', substr_count($__rel, '/') + 1);
+    
+    header("Location: {$base}auth/login.php");
     exit;
 }
+?>

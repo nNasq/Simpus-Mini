@@ -24,4 +24,50 @@ try {
 } catch (PDOException $e) {
     die("Koneksi database gagal: " . $e->getMessage());
 }
+
+class DatabaseSessionHandler implements SessionHandlerInterface {
+    private $pdo;
+    
+    public function __construct($pdo) { 
+        $this->pdo = $pdo; 
+    }
+    
+    #[\ReturnTypeWillChange]
+    public function open($path, $name) { return true; }
+    
+    #[\ReturnTypeWillChange]
+    public function close() { return true; }
+    
+    #[\ReturnTypeWillChange]
+    public function read($id) {
+        $stmt = $this->pdo->prepare("SELECT data FROM app_sessions WHERE id = ?");
+        $stmt->execute([$id]);
+        $data = $stmt->fetchColumn();
+        return $data !== false ? $data : '';
+    }
+    
+    #[\ReturnTypeWillChange]
+    public function write($id, $data) {
+        $waktu = time();
+        // UPSERT spesifik PostgreSQL
+        $stmt = $this->pdo->prepare("INSERT INTO app_sessions (id, data, waktu) VALUES (?, ?, ?) ON CONFLICT (id) DO UPDATE SET data = EXCLUDED.data, waktu = EXCLUDED.waktu");
+        return $stmt->execute([$id, $data, $waktu]);
+    }
+    
+    #[\ReturnTypeWillChange]
+    public function destroy($id) {
+        $stmt = $this->pdo->prepare("DELETE FROM app_sessions WHERE id = ?");
+        return $stmt->execute([$id]);
+    }
+    
+    #[\ReturnTypeWillChange]
+    public function gc($max_lifetime) {
+        $stmt = $this->pdo->prepare("DELETE FROM app_sessions WHERE waktu < ?");
+        $stmt->execute([time() - $max_lifetime]);
+        return $stmt->rowCount();
+    }
+}
+
+// Wajib dipanggil sebelum session_start() di file mana pun
+session_set_save_handler(new DatabaseSessionHandler($pdo), true);
 ?>
