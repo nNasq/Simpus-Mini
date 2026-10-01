@@ -1,8 +1,14 @@
 {
   "builds": [
     {
-      "src": "**/*.php",
-      "use": "vercel-php@0.6.2"
+      "src": "router.php",
+      "use": "vercel-php@0.6.1"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/router.php"
     }
   ]
 }
