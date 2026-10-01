@@ -1,8 +1,6 @@
 <?php
-// WAJIB panggil koneksi duluan agar class DatabaseSessionHandler terbaca
 require_once __DIR__ . '/koneksi.php';
 
-// Memastikan session hanya dimulai jika belum ada
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

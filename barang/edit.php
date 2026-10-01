@@ -1,5 +1,5 @@
 <?php
-// Memastikan hanya user yang sudah login yang bisa mengakses halaman ini
+
 require __DIR__ . '/../includes/auth.php';
 
 $page_title = "Edit Barang";

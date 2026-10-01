@@ -6,13 +6,13 @@ require __DIR__ . '/../includes/koneksi.php';
 $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 
-// Konfigurasi Paginasi & Pencarian
+
 $perPage = 5;
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $offset = ($page - 1) * $perPage;
 $keyword = trim($_GET['q'] ?? '');
 
-// Eksekusi Kueri Data
+
 if ($keyword !== '') {
     $hitung = $pdo->prepare("SELECT COUNT(*) FROM barang WHERE nama ILIKE :kw");
     $hitung->execute(['kw' => '%' . $keyword . '%']);

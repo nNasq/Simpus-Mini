@@ -6,13 +6,13 @@ require __DIR__ . '/../includes/koneksi.php';
 $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 
-// Konfigurasi Paginasi & Pencarian
+
 $perPage = 5;
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $offset = ($page - 1) * $perPage;
 $keyword = trim($_GET['q'] ?? '');
 
-// Eksekusi Kueri Data
+
 if ($keyword !== '') {
     $hitung = $pdo->prepare("SELECT COUNT(*) FROM supplier WHERE nama ILIKE :kw");
     $hitung->execute(['kw' => '%' . $keyword . '%']);
@@ -61,7 +61,6 @@ $sudahLogin = isset($_SESSION['user_id']);
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body p-4">
 
-        <!-- Baris Pencarian & Info Total Data -->
         <div class="row align-items-center mb-4 g-3">
             <div class="col-md-7 col-lg-5">
                 <form method="get" action="list.php" class="input-group shadow-sm">
@@ -115,7 +114,6 @@ $sudahLogin = isset($_SESSION['user_id']);
                                             <a href="edit.php?id=<?php echo (int) $s['id']; ?>" class="btn btn-warning btn-sm text-white shadow-sm" title="Edit">
                                                 <i class="bi bi-pencil-square"></i>
                                             </a>
-                                            <!-- Form hapus dengan konfirmasi JS -->
                                             <form class="m-0 p-0" method="post" action="hapus.php" onsubmit="return confirm('Apakah Anda yakin ingin menghapus supplier ini?');">
                                                 <input type="hidden" name="id" value="<?php echo (int) $s['id']; ?>">
                                                 <button type="submit" class="btn btn-danger btn-sm shadow-sm" title="Hapus">
@@ -132,7 +130,6 @@ $sudahLogin = isset($_SESSION['user_id']);
             </table>
         </div>
 
-        <!-- Paginasi -->
         <?php if ($totalPages > 1): ?>
             <nav class="mt-4" aria-label="Navigasi halaman">
                 <ul class="pagination pagination-sm justify-content-center mb-0 shadow-sm rounded-3">

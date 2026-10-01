@@ -3,11 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
     initValidasiForm();
 });
 
-// ===== Konfirmasi hapus =====
-// Tombol Hapus berada di dalam <form class="form-hapus" method="post">
-// yang mengirim request ke server (barang/hapus.php, supplier/hapus.php).
-// Konfirmasi dilakukan pada event "submit" agar bisa dibatalkan
-// (preventDefault) sebelum request terkirim.
 function initHapusConfirm() {
     document.addEventListener("submit", function (e) {
         const form = e.target;
@@ -22,7 +17,6 @@ function initHapusConfirm() {
     });
 }
 
-// ===== Validasi form (client-side, memakai style Bootstrap) =====
 function tampilkanError(input, pesan) {
     hapusError(input);
     input.classList.add("is-invalid");

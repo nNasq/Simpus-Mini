@@ -1,5 +1,5 @@
 <?php
-// Memastikan hanya user yang sudah login yang bisa mengakses halaman ini
+
 require __DIR__ . '/../includes/auth.php';
 
 $page_title = "Edit Supplier";
@@ -35,13 +35,13 @@ if (!$supplier) {
 </div>
 
 <?php if ($flash): ?>
-<div class="alert alert-<?php echo $flash['type'] === 'success' ? 'success' : 'danger'; ?> alert-dismissible fade show shadow-sm border-0 d-flex align-items-center rounded-3" role="alert">
-    <i class="bi <?php echo $flash['type'] === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'; ?> fs-4 me-3"></i>
-    <div>
-        <strong><?php echo $flash['type'] === 'success' ? 'Berhasil!' : 'Gagal!'; ?></strong> <?php echo e($flash['pesan']); ?>
+    <div class="alert alert-<?php echo $flash['type'] === 'success' ? 'success' : 'danger'; ?> alert-dismissible fade show shadow-sm border-0 d-flex align-items-center rounded-3" role="alert">
+        <i class="bi <?php echo $flash['type'] === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'; ?> fs-4 me-3"></i>
+        <div>
+            <strong><?php echo $flash['type'] === 'success' ? 'Berhasil!' : 'Gagal!'; ?></strong> <?php echo e($flash['pesan']); ?>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-</div>
 <?php endif; ?>
 
 <div class="card border-0 shadow-sm rounded-4">
