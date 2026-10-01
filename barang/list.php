@@ -6,19 +6,32 @@ require __DIR__ . '/../includes/koneksi.php';
 $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 
-// Menangkap query pencarian dari form (jika ada)
+// Konfigurasi Paginasi & Pencarian
+$perPage = 5;
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$offset = ($page - 1) * $perPage;
 $keyword = trim($_GET['q'] ?? '');
 
-// Logika Pencarian Server-Side
+// Eksekusi Kueri Data
 if ($keyword !== '') {
-    // Menggunakan ILIKE untuk PostgreSQL (Jika pakai MySQL, ganti menjadi LIKE)
-    $stmt = $pdo->prepare("SELECT * FROM barang WHERE nama ILIKE :keyword ORDER BY id DESC");
-    $stmt->execute(['keyword' => "%$keyword%"]);
-    $daftarBarang = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $hitung = $pdo->prepare("SELECT COUNT(*) FROM barang WHERE nama ILIKE :kw");
+    $hitung->execute(['kw' => '%' . $keyword . '%']);
+    $totalRows = $hitung->fetchColumn();
+
+    $stmt = $pdo->prepare("SELECT * FROM barang WHERE nama ILIKE :kw ORDER BY id DESC LIMIT :limit OFFSET :offset");
+    $stmt->bindValue('kw', '%' . $keyword . '%');
 } else {
-    // Jika tidak ada pencarian, tampilkan semua data
-    $daftarBarang = $pdo->query("SELECT * FROM barang ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
+    $totalRows = $pdo->query("SELECT COUNT(*) FROM barang")->fetchColumn();
+    $stmt = $pdo->prepare("SELECT * FROM barang ORDER BY id DESC LIMIT :limit OFFSET :offset");
 }
+$stmt->bindValue('limit', $perPage, PDO::PARAM_INT);
+$stmt->bindValue('offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
+
+$daftarBarang = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$totalPages = max(1, (int) ceil($totalRows / $perPage));
+
+$sudahLogin = isset($_SESSION['user_id']);
 ?>
 
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
@@ -29,36 +42,44 @@ if ($keyword !== '') {
         <a href="list.php" class="btn btn-outline-secondary shadow-sm px-4">
             <i class="bi bi-arrow-clockwise me-1"></i> Muat Ulang
         </a>
-        <a href="tambah.php" class="btn btn-primary shadow-sm px-4">
-            <i class="bi bi-plus-lg me-1"></i> Tambah Barang Baru
-        </a>
+        <?php if ($sudahLogin): ?>
+            <a href="tambah.php" class="btn btn-primary shadow-sm px-4">
+                <i class="bi bi-plus-lg me-1"></i> Tambah Barang Baru
+            </a>
+        <?php endif; ?>
     </div>
 </div>
 
 <?php if ($flash): ?>
-<div class="alert alert-<?php echo $flash['type'] === 'success' ? 'success' : 'danger'; ?> alert-dismissible fade show shadow-sm rounded-3" role="alert">
-    <?php echo e($flash['pesan']); ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
-</div>
+    <div class="alert alert-<?php echo $flash['type'] === 'success' ? 'success' : 'danger'; ?> alert-dismissible fade show shadow-sm rounded-3 d-flex align-items-center" role="alert">
+        <i class="bi <?php echo $flash['type'] === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'; ?> fs-5 me-2"></i>
+        <div><?php echo e($flash['pesan']); ?></div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+    </div>
 <?php endif; ?>
 
 <div class="card border-0 shadow-sm rounded-4">
     <div class="card-body p-4">
 
-        <div class="row mb-4">
-            <div class="col-md-6 col-lg-5">
-                <!-- Ubah menjadi Form nyata agar data terkirim ke URL -->
-                <form method="GET" action="list.php" class="input-group shadow-sm">
+        <!-- Baris Pencarian & Info Total Data -->
+        <div class="row align-items-center mb-4 g-3">
+            <div class="col-md-7 col-lg-5">
+                <form method="get" action="list.php" class="input-group shadow-sm">
                     <span class="input-group-text bg-white border-end-0">
                         <i class="bi bi-search text-muted"></i>
                     </span>
-                    <input type="text" name="q" value="<?php echo e($keyword); ?>" class="form-control border-start-0 ps-0" placeholder="Cari nama barang..." aria-label="Cari barang">
-                    <button class="btn btn-primary" type="submit">Cari</button>
-                    
-                    <?php if($keyword): ?>
-                        <a href="list.php" class="btn btn-danger" title="Hapus Filter"><i class="bi bi-x-lg"></i></a>
+                    <input type="text" name="q" class="form-control border-start-0 ps-0" value="<?php echo e($keyword); ?>" placeholder="Ketik nama barang...">
+                    <button class="btn btn-primary px-3" type="submit">Cari</button>
+                    <?php if ($keyword !== ''): ?>
+                        <a href="list.php" class="btn btn-danger" title="Reset Pencarian"><i class="bi bi-x-lg"></i></a>
                     <?php endif; ?>
                 </form>
+            </div>
+            <div class="col-md-5 col-lg-7 text-md-end">
+                <p class="text-muted small mb-0">
+                    Menampilkan <strong class="text-dark"><?php echo count($daftarBarang); ?></strong> dari <strong class="text-dark"><?php echo (int) $totalRows; ?></strong> barang
+                    <?php if ($keyword !== ''): ?> untuk pencarian "<strong class="text-dark"><?php echo e($keyword); ?></strong>"<?php endif; ?>
+                </p>
             </div>
         </div>
 
@@ -71,52 +92,69 @@ if ($keyword !== '') {
                         <th>Kategori</th>
                         <th>Harga</th>
                         <th>Stok</th>
-                        <th>Tanggal Masuk</th>
-                        <th>Aksi</th>
+                        <?php if ($sudahLogin): ?><th>Aksi</th><?php endif; ?>
                     </tr>
                 </thead>
                 <tbody class="text-center">
                     <?php if (empty($daftarBarang)): ?>
-                    <tr>
-                        <td colspan="7" class="text-muted py-5 text-center">
-                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
-                            <?php echo $keyword ? "Tidak ada barang dengan nama '<b>" . e($keyword) . "</b>'." : "Belum ada data barang. Silakan tambah lewat menu 'Tambah Barang Baru'."; ?>
-                        </td>
-                    </tr>
-                    <?php else: ?>
-                        <?php foreach ($daftarBarang as $b): ?>
                         <tr>
-                            <td class="text-start fw-medium text-dark"><?php echo e($b['nama']); ?></td>
-                            <td><?php echo e($b['sku']); ?></td>
-                            <td><span class="badge bg-secondary bg-opacity-10 text-secondary border"><?php echo e($b['kategori']); ?></span></td>
-                            <td>Rp <?php echo number_format((int)$b['harga'], 0, ',', '.'); ?></td>
-                            <td>
-                                <span class="fw-medium me-1"><?php echo e($b['stok']); ?></span>
-                                <?php if ((int)$b['stok'] > 0): ?>
-                                    <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle rounded-pill">Tersedia</span>
-                                <?php else: ?>
-                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle rounded-pill">Kosong</span>
-                                <?php endif; ?>
-                            </td>
-                            <!-- Memformat dan Menampilkan Kolom TIMESTAMP baru -->
-                            <td class="text-secondary small">
-                                <?php 
-                                    $waktu = $b['tanggal_ditambahkan'] ?? 'Belum diset'; 
-                                    echo ($waktu !== 'Belum diset') ? date('d M Y, H:i', strtotime($waktu)) : $waktu;
-                                ?>
-                            </td>
-                            <td>
-                                <div class="btn-group shadow-sm">
-                                    <button type="button" class="btn btn-warning btn-sm text-white" title="Edit"><i class="bi bi-pencil-square"></i></button>
-                                    <button type="button" class="btn btn-danger btn-sm btn-hapus" title="Hapus"><i class="bi bi-trash"></i></button>
-                                </div>
+                            <td colspan="<?php echo $sudahLogin ? 6 : 5; ?>" class="text-muted py-5">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                                Tidak ada data barang yang cocok.
                             </td>
                         </tr>
+                    <?php else: ?>
+                        <?php foreach ($daftarBarang as $b): ?>
+                            <tr>
+                                <td class="text-start fw-medium text-dark"><?php echo e($b['nama']); ?></td>
+                                <td><?php echo e($b['sku']); ?></td>
+                                <td><span class="badge bg-secondary bg-opacity-10 text-secondary border"><?php echo e($b['kategori']); ?></span></td>
+                                <td class="fw-medium">Rp <?php echo number_format((int) $b['harga'], 0, ',', '.'); ?></td>
+                                <td>
+                                    <span class="fw-medium me-1"><?php echo e($b['stok']); ?></span>
+                                    <?php if ((int) $b['stok'] > 0): ?>
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle rounded-pill">Tersedia</span>
+                                    <?php else: ?>
+                                        <span class="badge bg-danger bg-opacity-10 text-danger border border-danger-subtle rounded-pill">Kosong</span>
+                                    <?php endif; ?>
+                                </td>
+                                <?php if ($sudahLogin): ?>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <a href="edit.php?id=<?php echo (int) $b['id']; ?>" class="btn btn-warning btn-sm text-white shadow-sm" title="Edit">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </a>
+                                            <!-- Form hapus ditambahkan konfirmasi JS dan disesuaikan tata letaknya -->
+                                            <form class="m-0 p-0" method="post" action="hapus.php" onsubmit="return confirm('Apakah Anda yakin ingin menghapus barang ini?');">
+                                                <input type="hidden" name="id" value="<?php echo (int) $b['id']; ?>">
+                                                <button type="submit" class="btn btn-danger btn-sm shadow-sm" title="Hapus">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                <?php endif; ?>
+                            </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </tbody>
             </table>
         </div>
+
+        <!-- Paginasi -->
+        <?php if ($totalPages > 1): ?>
+            <nav class="mt-4" aria-label="Navigasi halaman">
+                <ul class="pagination pagination-sm justify-content-center mb-0 shadow-sm rounded-3">
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <li class="page-item <?php echo $i === $page ? 'active' : ''; ?>">
+                            <a class="page-link" href="list.php?page=<?php echo $i; ?><?php echo $keyword !== '' ? '&q=' . urlencode($keyword) : ''; ?>">
+                                <?php echo $i; ?>
+                            </a>
+                        </li>
+                    <?php endfor; ?>
+                </ul>
+            </nav>
+        <?php endif; ?>
 
     </div>
 </div>

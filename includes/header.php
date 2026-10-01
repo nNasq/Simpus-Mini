@@ -1,23 +1,36 @@
 <?php
-session_start();
+// Memastikan session hanya dimulai jika belum ada
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$sudahLogin = isset($_SESSION['user_id']);
+
 $__jobsheetRoot = dirname(__DIR__);
 $__scriptDir = dirname($_SERVER['SCRIPT_FILENAME']);
 $__rel = ltrim(str_replace('\\', '/', substr($__scriptDir, strlen($__jobsheetRoot))), '/');
 $base = $__rel === '' ? '' : str_repeat('../', substr_count($__rel, '/') + 1);
 
 if (!function_exists('e')) {
-    function e($s) { return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
+    function e($s)
+    {
+        return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
+    }
 }
 
-// Menentukan menu aktif (sesuai template HTML Anda, link tidak menggunakan ikon)
 $__current = ($__rel === '' ? '' : $__rel . '/') . basename($_SERVER['SCRIPT_FILENAME']);
+
+// Susunan menu (Hanya Beranda dan Daftar Barang yang terlihat oleh publik)
 $__menu = [
-    'index.php'          => 'Beranda',
-    'barang/list.php'    => 'Daftar Barang',
-    'barang/tambah.php'  => 'Tambah Barang',
-    'supplier/list.php'  => 'Daftar Supplier',
-    'supplier/tambah.php'=> 'Tambah Supplier',
+    'index.php'         => ['Beranda', 'bi-house-door'],
+    'barang/list.php'   => ['Daftar Barang', 'bi-box-seam'],
 ];
+
+// Jika sudah login, tambahkan menu lainnya
+if ($sudahLogin) {
+    $__menu['barang/tambah.php']   = ['Tambah Barang', 'bi-plus-circle'];
+    $__menu['supplier/list.php']   = ['Daftar Supplier', 'bi-truck'];
+    $__menu['supplier/tambah.php'] = ['Tambah Supplier', 'bi-person-plus'];
+}
 ?>
 <!doctype html>
 <html lang="id">
@@ -35,7 +48,7 @@ $__menu = [
   <link rel="stylesheet" href="<?php echo $base; ?>assets/css/style.css">
 
   <style>
-    /* CSS tambahan memastikan ikon bulat jika tidak ada di style.css Anda */
+    /* CSS tambahan memastikan ikon bulat pada ringkasan data */
     .summary-icon {
         width: 64px;
         height: 64px;
@@ -56,15 +69,40 @@ $__menu = [
       <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
+      
       <div class="collapse navbar-collapse" id="navMenu">
-        <ul class="navbar-nav ms-auto fw-medium">
-        <?php foreach ($__menu as $path => $label): ?>
-          <li class="nav-item">
-            <a class="nav-link <?php echo $__current === $path ? 'active' : ''; ?>" href="<?php echo $base . $path; ?>">
-              <?php echo $label; ?>
-            </a>
-          </li>
-        <?php endforeach; ?>
+        <ul class="navbar-nav ms-auto fw-medium align-items-lg-center">
+          
+          <!-- Render Menu Dinamis -->
+          <?php foreach ($__menu as $path => [$label, $icon]): ?>
+            <li class="nav-item">
+              <a class="nav-link <?php echo $__current === $path ? 'active' : ''; ?>" href="<?php echo $base . $path; ?>">
+                <?php echo $label; ?>
+              </a>
+            </li>
+          <?php endforeach; ?>
+
+          <!-- Bagian Profil & Tombol Auth -->
+          <?php if ($sudahLogin): ?>
+            <!-- Menampilkan Nama User -->
+            <li class="nav-item ms-lg-3 d-flex align-items-center text-white-50 mt-2 mt-lg-0 mb-2 mb-lg-0">
+                <i class="bi bi-person-circle me-1"></i> <?php echo e($_SESSION['nama'] ?? 'Pengguna'); ?>
+            </li>
+            <!-- Tombol Logout -->
+            <li class="nav-item ms-lg-3">
+                <a class="btn btn-light btn-sm fw-semibold text-primary shadow-sm" href="<?php echo $base; ?>auth/logout.php">
+                    <i class="bi bi-box-arrow-right me-1"></i> Logout
+                </a>
+            </li>
+          <?php else: ?>
+            <!-- Tombol Login -->
+            <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                <a class="btn btn-light btn-sm fw-semibold text-primary shadow-sm" href="<?php echo $base; ?>auth/login.php">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                </a>
+            </li>
+          <?php endif; ?>
+
         </ul>
       </div>
     </div>
