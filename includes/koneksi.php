@@ -1,17 +1,26 @@
 <?php
-// Data detail koneksi dari Supabase Nanas
-$host = 'db.jhhwmzaivtymiwaqtpsq.supabase.co'; // Diambil dari teks setelah tanda '@'
-$port = '5432';                                // Port default Supabase
-$db   = 'postgres';                            // Nama database default
-$user = 'postgres';                            // Diambil dari teks setelah '://'
-$pass = '12345678';  // Ganti bagian ini dengan password Anda!
+// 1. Paste "Connection string" dari Neon tepat di antara tanda kutip di bawah ini
+$neon_link = "postgresql://neondb_owner:npg_SM4Ci6RbaqPo@ep-cool-bread-b4akwc0d-pooler.c-6.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+
+// 2. Fungsi parse_url() otomatis memecah link di atas menjadi bagian-bagian yang dibutuhkan PDO
+$db_url = parse_url($neon_link);
+
+$host = $db_url['host'];
+$port = $db_url['port'] ?? 5432;
+$user = $db_url['user'];
+$pass = $db_url['pass'];
+$db   = ltrim($db_url['path'], '/'); // Menghilangkan garis miring di depan nama database
+
+// 3. Menyusun Data Source Name (DSN) untuk PostgreSQL
+$dsn = "pgsql:host=$host;port=$port;dbname=$db;sslmode=require";
 
 try {
-    $dsn = "pgsql:host=$host;port=$port;dbname=$db";
-    $pdo = new PDO($dsn, $user, $pass);
-    
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = new PDO($dsn, $user, $pass, [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES   => false,
+    ]);
 } catch (PDOException $e) {
-    die("Koneksi Database Gagal: " . $e->getMessage());
+    die("Koneksi database gagal: " . $e->getMessage());
 }
 ?>
